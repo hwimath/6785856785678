@@ -90,6 +90,21 @@
     .option.wrong {
       background-color: #dc3545 !important;
     }
+    #next-button {
+      display: none;
+      margin-top: 20px;
+      padding: 15px 30px;
+      font-size: 18px;
+      color: #fff;
+      background-color: #007bff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    #next-button:hover {
+      background-color: #0056b3;
+    }
     #game-over {
       color: #dc3545;
     }
@@ -175,6 +190,8 @@
       <button class="option" onclick="checkAnswer(2)"></button>
       <button class="option" onclick="checkAnswer(3)"></button>
     </div>
+    <!-- 다음문제 버튼 -->
+    <button id="next-button" onclick="nextQuestion()">다음문제</button>
   </div>
 
   <!-- 게임 종료 화면 -->
@@ -297,7 +314,7 @@
         answer: "9개"
       },
       {
-        question: "19. \\(2 \\times 5^2 \\times 7\\)와 \\(2^2 \\times 3^3 \\times 5\\)의 공약수의 개수를 구하여라.",
+        question: "19. \\(2 \\times 5^2\\)와 \\(2^2 \\times 3^3 \\times 5\\)의 공약수의 개수를 구하여라.",
         options: ["4개", "6개", "8개", "2개"],
         answer: "4개"
       },
@@ -538,7 +555,8 @@
               endGame();
             } else {
               document.getElementById('lives-display').innerText = '남은 기회: ' + lives;
-              loadNextQuestion();
+              // 자동 진행 대신 "다음문제" 버튼 노출
+              showNextButton();
             }
           }
           updateEnergyBar();
@@ -560,6 +578,9 @@
 
     // 질문 로드 함수
     function loadNextQuestion() {
+      // 다음문제 버튼 숨김
+      document.getElementById('next-button').style.display = 'none';
+
       if(shuffledQuestions.length === 0) {
         shuffledQuestions = shuffleArray([...questions]);
       }
@@ -570,7 +591,6 @@
 
       document.getElementById('question').innerHTML = currentQuestion.question;
       let options = currentQuestion.options.slice();
-      let originalAnswerIndex = options.indexOf(currentQuestion.answer);
       options = shuffleArray(options);
       correctOptionIndex = options.indexOf(currentQuestion.answer);
       let optionButtons = document.getElementsByClassName('option');
@@ -599,17 +619,20 @@
         document.getElementById('score-display').innerText = '점수: ' + score;
         optionButtons[selectedIndex].classList.add('correct');
         checkReward();
-        setTimeout(loadNextQuestion, 1000);
+        // 자동 진행 대신 "다음문제" 버튼 노출
+        showNextButton();
       } else {
         optionButtons[selectedIndex].classList.add('wrong');
         lives -= 1;
         if(lives <= 0) {
           showCorrectAnswer();
           endGame();
+          return;
         } else {
           document.getElementById('lives-display').innerText = '남은 기회: ' + lives;
           showCorrectAnswer();
-          setTimeout(loadNextQuestion, 1000);
+          // 자동 진행 대신 "다음문제" 버튼 노출
+          showNextButton();
         }
       }
 
@@ -624,6 +647,18 @@
     function showCorrectAnswer() {
       let optionButtons = document.getElementsByClassName('option');
       optionButtons[correctOptionIndex].classList.add('correct');
+    }
+
+    // 다음문제 버튼을 보이게 하는 함수
+    function showNextButton() {
+      // 만약 시간 제한이 있는 경우 에너지바가 동작 중이면 잠시 멈춤
+      clearInterval(energyInterval);
+      document.getElementById('next-button').style.display = 'inline-block';
+    }
+
+    // 다음문제 버튼 클릭 시 호출되는 함수
+    function nextQuestion() {
+      loadNextQuestion();
     }
 
     // 게임 종료 함수
